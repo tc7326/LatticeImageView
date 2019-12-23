@@ -13,11 +13,11 @@
         android:id="@+id/liv_test"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
+        android:layout_margin="20dp"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
         android:src="@drawable/bg"
-        app:columns_number="8"
+        app:columns_number="6"
         app:lines_number="4"
         app:select_all="false" />
 

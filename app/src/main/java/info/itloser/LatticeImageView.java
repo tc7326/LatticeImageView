@@ -8,7 +8,6 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.view.View;
 import android.widget.ImageView;
 
 import java.util.Arrays;
@@ -94,7 +93,7 @@ public class LatticeImageView extends ImageView {
         viewHeight = this.getHeight();
 
         //最外层的一圈长方形
-        canvas.drawRect(0, 0, viewWidth - 1, viewHeight - 1, latticePaint);
+        canvas.drawRect(1, 1, viewWidth - 1, viewHeight - 1, latticePaint);
 
         oneHeight = viewHeight / numberOfLines;
         oneWidth = viewWidth / numberOfColumns;
@@ -198,9 +197,14 @@ public class LatticeImageView extends ImageView {
         int i = (int) (x / oneWidth);
         int j = (int) (y / oneHeight);
 
-        if (nowScrollOne != j * numberOfColumns + i + 1)
-            selectOne(j * numberOfColumns + i + 1);
+        if (x > viewWidth || y > viewHeight) {
+            //这里好像有可能选中的值大于view的值
+            return;
+        }
 
+        if (nowScrollOne != j * numberOfColumns + i + 1) {
+            selectOne(j * numberOfColumns + i + 1);
+        }
         nowScrollOne = j * numberOfColumns + i + 1;
     }
 
