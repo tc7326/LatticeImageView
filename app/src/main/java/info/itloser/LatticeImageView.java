@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.ImageView;
 
 import java.util.Arrays;
@@ -18,7 +19,11 @@ import java.util.Arrays;
  */
 public class LatticeImageView extends ImageView {
 
-    Paint latticePaint, selectPaint;
+    SomeListener someListener;
+
+    Paint latticePaint, selectPaint, disablePaint;
+
+    boolean click_enable;//默认可用
 
     int lineColor;
 
@@ -46,20 +51,21 @@ public class LatticeImageView extends ImageView {
         super(context, attrs, defStyleAttr);
         initTypedArray(context, attrs);//初始化属性值
         initPaint();
-//        this.setLayerType(View.LAYER_TYPE_SOFTWARE, null);//禁用硬件加速
+        this.setLayerType(View.LAYER_TYPE_SOFTWARE, null);//禁用硬件加速
         gestureDetector = new GestureDetector(context, listener);//手势监听
     }
 
     //初始化属性值
     public void initTypedArray(Context context, AttributeSet attrs) {
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.LatticeImageView);
+        click_enable = typedArray.getBoolean(R.styleable.LatticeImageView_click_enable, true);
         numberOfLines = typedArray.getInteger(R.styleable.LatticeImageView_lines_number, 4);
         numberOfColumns = typedArray.getInteger(R.styleable.LatticeImageView_columns_number, 8);
-        lineColor = typedArray.getColor(R.styleable.LatticeImageView_Line_color, 0xFFFFFFFF);
+        lineColor = typedArray.getColor(R.styleable.LatticeImageView_line_color, 0xFFFFFFFF);
         selectedOneList = new int[numberOfLines * numberOfColumns];
         if (typedArray.getBoolean(R.styleable.LatticeImageView_select_all, false))
             Arrays.fill(selectedOneList, 1);
-        typedArray.recycle();
+        typedArray.recycle();//释放资源
     }
 
     //初始化画笔
@@ -71,8 +77,13 @@ public class LatticeImageView extends ImageView {
 
         selectPaint = new Paint();
         selectPaint.setColor(lineColor);
-        selectPaint.setAlpha(127);
+        selectPaint.setAlpha(128);
         selectPaint.setStyle(Paint.Style.FILL);
+
+        disablePaint = new Paint();
+        disablePaint.setColor(lineColor);
+        disablePaint.setAlpha(235);
+        disablePaint.setStyle(Paint.Style.FILL);
 
     }
 
@@ -83,6 +94,9 @@ public class LatticeImageView extends ImageView {
         drawDefLine(canvas);
 
         drawSelectOne(canvas);
+
+        if (!click_enable)
+            drawDisable(canvas);
 
     }
 
@@ -130,6 +144,11 @@ public class LatticeImageView extends ImageView {
 
     }
 
+    //画禁用的部分
+    private void drawDisable(Canvas canvas) {
+        canvas.drawRect(0, 0, viewWidth + 1, viewHeight + 1, disablePaint);
+    }
+
     //以下是手势监听
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -150,10 +169,16 @@ public class LatticeImageView extends ImageView {
 
     //根据行列选中某个块，从左上角0开始
     public void selectOne(int i) {
+
+        if (!click_enable) {
+            return;
+        }
+
         try {
             //有几率奔溃，所以try一下
             selectedOneList[i - 1] = selectedOneList[i - 1] == 1 ? 0 : 1;
             invalidate();
+            someListener.click(i, getSelectedArray());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -223,5 +248,30 @@ public class LatticeImageView extends ImageView {
         System.arraycopy(ints, 0, selectedOneList, 0, ints.length);
         invalidate();
     }
+
+    //获取选中的集合
+    public int[] getSelectedArray() {
+        return selectedOneList;
+    }
+
+    //启用/禁用 点击
+    public void setClickEnable(boolean b) {
+        click_enable = b;
+        invalidate();
+    }
+
+    //设置监听的方法
+    public void setSomeListener(SomeListener listener) {
+        someListener = listener;
+    }
+
+    //对外的监听接口
+    interface SomeListener {
+
+        //选中监听
+        void click(int one, int[] ints);
+
+    }
+
 
 }

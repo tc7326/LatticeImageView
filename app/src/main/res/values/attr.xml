@@ -3,13 +3,15 @@
 
     <declare-styleable name="LatticeImageView">
         //线的颜色
-        <attr name="Line_color" format="color" />
+        <attr name="line_color" format="color" />
         //是否全选
         <attr name="select_all" format="boolean" />
         //行数，默认4
         <attr name="lines_number" format="integer" />
         //列数，默认8
         <attr name="columns_number" format="integer" />
+        //可点击
+        <attr name="click_enable" format="boolean" />
 
     </declare-styleable>
 
